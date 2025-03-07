@@ -5,14 +5,16 @@ import { EventCard } from "./event-card";
 import { useMemo, useState } from "react";
 
 // Status priority for sorting
-const statusPriority: Record<string, number> = {
+const STATUS_PRIORITY: Record<string, number> = {
   ongoing: 1,
   upcoming: 2,
   completed: 3,
 };
 
-// Mock data - replace with actual API call later
-const mockEvents: DevDayEvent[] = [
+type StatusFilter = 'all' | 'ongoing' | 'upcoming' | 'completed';
+
+// Mock data - in a real application, this would come from an API
+const MOCK_EVENTS: DevDayEvent[] = [
   {
     id: "1",
     title: "DevDay 2024 - Q1",
@@ -51,21 +53,19 @@ const mockEvents: DevDayEvent[] = [
   },
 ];
 
-type StatusFilter = 'all' | 'ongoing' | 'upcoming' | 'completed';
-
 export function EventList() {
   const [selectedStatus, setSelectedStatus] = useState<StatusFilter>('all');
 
   const filteredEvents = useMemo(() => {
     // First, filter events if a status is selected
-    let filtered = selectedStatus === 'all' 
-      ? mockEvents 
-      : mockEvents.filter(event => event.status === selectedStatus);
+    const filtered = selectedStatus === 'all' 
+      ? MOCK_EVENTS 
+      : MOCK_EVENTS.filter(event => event.status === selectedStatus);
 
     // Then sort by status priority and date
     return filtered.sort((a, b) => {
       // First sort by status priority
-      const statusDiff = statusPriority[a.status] - statusPriority[b.status];
+      const statusDiff = STATUS_PRIORITY[a.status] - STATUS_PRIORITY[b.status];
       if (statusDiff !== 0) return statusDiff;
       
       // If status is the same, sort by date (most recent first)
@@ -84,52 +84,34 @@ export function EventList() {
 
       {/* Status filters */}
       <div className="mb-6 flex flex-wrap gap-2">
-        <button
-          onClick={() => setSelectedStatus('all')}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            selectedStatus === 'all'
-              ? 'bg-sahaj-purple text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          All Events
-        </button>
-        <button
-          onClick={() => setSelectedStatus('ongoing')}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            selectedStatus === 'ongoing'
-              ? 'bg-green-600 text-white'
-              : 'bg-green-100 text-green-700 hover:bg-green-200'
-          }`}
-        >
-          Ongoing
-        </button>
-        <button
-          onClick={() => setSelectedStatus('upcoming')}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            selectedStatus === 'upcoming'
-              ? 'bg-blue-600 text-white'
-              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-          }`}
-        >
-          Upcoming
-        </button>
-        <button
-          onClick={() => setSelectedStatus('completed')}
-          className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            selectedStatus === 'completed'
-              ? 'bg-gray-600 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          Completed
-        </button>
+        <StatusFilterButton 
+          status="all" 
+          label="All Events"
+          selectedStatus={selectedStatus} 
+          onClick={() => setSelectedStatus('all')} 
+        />
+        <StatusFilterButton 
+          status="ongoing" 
+          label="Ongoing"
+          selectedStatus={selectedStatus} 
+          onClick={() => setSelectedStatus('ongoing')} 
+        />
+        <StatusFilterButton 
+          status="upcoming" 
+          label="Upcoming"
+          selectedStatus={selectedStatus} 
+          onClick={() => setSelectedStatus('upcoming')} 
+        />
+        <StatusFilterButton 
+          status="completed" 
+          label="Completed"
+          selectedStatus={selectedStatus} 
+          onClick={() => setSelectedStatus('completed')} 
+        />
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className="flex items-center justify-center min-h-[200px] rounded-lg border-2 border-dashed">
-          <p className="text-gray-500">No events found for the selected status</p>
-        </div>
+        <EmptyState />
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredEvents.map((event) => (
@@ -137,6 +119,53 @@ export function EventList() {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+interface StatusFilterButtonProps {
+  status: StatusFilter;
+  label: string;
+  selectedStatus: StatusFilter;
+  onClick: () => void;
+}
+
+function StatusFilterButton({ status, label, selectedStatus, onClick }: StatusFilterButtonProps) {
+  const getButtonStyles = () => {
+    if (status === 'all') {
+      return selectedStatus === 'all'
+        ? 'bg-sahaj-purple text-white'
+        : 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+    }
+    if (status === 'ongoing') {
+      return selectedStatus === 'ongoing'
+        ? 'bg-green-600 text-white'
+        : 'bg-green-100 text-green-700 hover:bg-green-200';
+    }
+    if (status === 'upcoming') {
+      return selectedStatus === 'upcoming'
+        ? 'bg-blue-600 text-white'
+        : 'bg-blue-100 text-blue-700 hover:bg-blue-200';
+    }
+    return selectedStatus === 'completed'
+      ? 'bg-gray-600 text-white'
+      : 'bg-gray-100 text-gray-700 hover:bg-gray-200';
+  };
+
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-full px-3 py-1 text-sm transition-colors ${getButtonStyles()}`}
+    >
+      {label}
+    </button>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="flex items-center justify-center min-h-[200px] rounded-lg border-2 border-dashed">
+      <p className="text-gray-500">No events found for the selected status</p>
     </div>
   );
 } 

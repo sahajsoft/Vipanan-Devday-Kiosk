@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useState, ReactNode } from "react";
+import { createContext, useState, ReactNode, useContext } from "react";
 
 interface ConfirmationContextType {
   ask: boolean;
   change: (value: boolean) => void;
 }
 
-export const ConfirmationContext = createContext<ConfirmationContextType>({
+const ConfirmationContext = createContext<ConfirmationContextType>({
   ask: false,
   change: () => {},
 });
@@ -24,4 +24,17 @@ export function ConfirmationProvider({ children }: { children: ReactNode }) {
       {children}
     </ConfirmationContext.Provider>
   );
-} 
+}
+
+// Custom hook for using the confirmation context
+export function useConfirmation() {
+  const context = useContext(ConfirmationContext);
+  
+  if (context === undefined) {
+    throw new Error("useConfirmation must be used within a ConfirmationProvider");
+  }
+  
+  return context;
+}
+
+export { ConfirmationContext }; 

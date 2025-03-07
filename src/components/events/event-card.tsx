@@ -11,9 +11,24 @@ interface EventCardProps {
 export function EventCard({ event }: EventCardProps) {
   const router = useRouter();
 
+  const getStatusStyles = () => {
+    switch (event.status) {
+      case "upcoming":
+        return "bg-blue-100 text-blue-700";
+      case "ongoing":
+        return "bg-green-100 text-green-700";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
+
+  const handleCardClick = () => {
+    router.push(`/events/${event.id}`);
+  };
+
   return (
     <div
-      onClick={() => router.push(`/events/${event.id}`)}
+      onClick={handleCardClick}
       className="group cursor-pointer rounded-lg border bg-white p-6 shadow-sm transition-all hover:shadow-md"
     >
       <div className="flex items-start justify-between">
@@ -21,13 +36,7 @@ export function EventCard({ event }: EventCardProps) {
           {event.title}
         </h3>
         <span
-          className={`rounded-full px-3 py-1 text-sm ${
-            event.status === "upcoming"
-              ? "bg-blue-100 text-blue-700"
-              : event.status === "ongoing"
-              ? "bg-green-100 text-green-700"
-              : "bg-gray-100 text-gray-700"
-          }`}
+          className={`rounded-full px-3 py-1 text-sm ${getStatusStyles()}`}
         >
           {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
         </span>
